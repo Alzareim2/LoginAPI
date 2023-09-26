@@ -1,4 +1,4 @@
-# Actix Web API with Rustls (OpenSSL disponible/Without SSL/TLS too)
+# Actix Web API with Rustls (OpenSSL available/Without SSL/TLS too)
 
 This API uses Actix Web to serve secure HTTP endpoints, utilizing Rustls for TLS encryption. The API interfaces with a MySQL database for various functionalities.
 
