@@ -86,6 +86,7 @@ This module contains common imports, error handling, and data structures such as
 
 The API is configured to listen on `0.0.0.0:8084`.
 
+Feel free to leave a star if you use the code <3 
 ## License
 
 This project is licensed under the MIT License. This means you can freely use, modify, and distribute the code, but you cannot hold the authors liable for any issues or faults. Always refer to the license document for full details.
