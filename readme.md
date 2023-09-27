@@ -87,6 +87,41 @@ This module contains common imports, error handling, and data structures such as
 The API is configured to listen on `0.0.0.0:8084`.
 
 Feel free to leave a star if you use the code <3 
+
+## Roadmap
+
+Our aim is to develop the most user-friendly and widely adopted login/registration API. The roadmap below outlines the features and improvements we plan to implement:
+
+1. **Docker Integration (Completed)**: 
+   - Ensure that the API is easily deployable using Docker for a consistent and isolated environment. 
+   
+2. **Configurable Email Verification**:
+   - Allow the option to skip email verification for token confirmation during registration.
+   - Give the choice between sending a verification link or a verification code in the email.
+
+3. **Session Management for Login**:
+   - Implement a robust session management system to maintain user sessions securely after login.
+   
+4. **Third-party Integrations for Login/Register**:
+   - Integrate options for users to register/login using third-party services like Google, Facebook, etc.
+
+5. **Modularity**: 
+   - Make the API highly modular, allowing developers to easily toggle features on or off based on their requirements.
+
+6. **Enhanced Security**:
+   - Explore multi-factor authentication options.
+
+7. **Documentation and Usage Guides**:
+   - Provide comprehensive documentation and step-by-step guides to help developers integrate and deploy the API effortlessly. (There will be a public guide, but for those who want to go further and help me, a Udemy training course will probably be available in the future with examples of NextJs code with the api / Creation of an SMTP server / Creation of a deployable database also with Docker)
+
+8. **Continuous Integration and Testing**:
+   - Ensure the reliability of the API through continuous integration and rigorous testing procedures.
+
+9. **Community Engagement**:
+   - Foster an active community around the project, encouraging contributions, feedback, and feature requests.
+
+Remember, our primary goal is ease of use while maintaining high security and flexibility. Your feedback and contributions will be invaluable in shaping the future of this project.
+
 ## License
 
 This project is licensed under the MIT License. This means you can freely use, modify, and distribute the code, but you cannot hold the authors liable for any issues or faults. Always refer to the license document for full details.
