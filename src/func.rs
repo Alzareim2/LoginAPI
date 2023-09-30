@@ -14,7 +14,7 @@ pub async fn ensure_database_and_table_exists(pool: &Pool) -> Result<(), mysql_a
             conn.query_drop(
                 r"CREATE TABLE users (
                     id INT AUTO_INCREMENT PRIMARY KEY,
-                    username VARCHAR(255) NOT NULL,
+                    username VARCHAR(255) NOT NULL UNIQUE,
                     email VARCHAR(255) NOT NULL UNIQUE,
                     password VARCHAR(255) NOT NULL,
                     verification_token VARCHAR(255) NOT NULL,

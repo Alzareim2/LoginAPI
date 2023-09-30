@@ -147,8 +147,12 @@ Our aim is to develop the most user-friendly and widely adopted login/registrati
 6. **Continuous Integration and Testing**:
    - Ensure the reliability of the API through continuous integration and rigorous testing procedures.
 
-7. **Community Engagement**:
+7. **Add WebSocket to Check Username and email availability**:
+   - Avoid enter all informations again at each request
+
+8. **Community Engagement**:
    - Foster an active community around the project, encouraging contributions, feedback, and feature requests.
+
 
 Remember, our primary goal is ease of use while maintaining high security and flexibility. Your feedback and contributions will be invaluable in shaping the future of this project.
 

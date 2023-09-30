@@ -23,7 +23,6 @@ async fn activate_2fa(
 
     let user_from_token = token_data.claims.sub;
 
-    // Use `user_from_token` instead of `info.0.username` for the rest of the logic
     debug!("Received 2FA activation request for username: {}", user_from_token);
 
     let mut conn = pool.get_conn().await.map_err(|e| {
