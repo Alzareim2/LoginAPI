@@ -5,6 +5,8 @@ use actix_web::{App, HttpServer, middleware, web::Data};
 use mysql_async::{Pool, Opts};
 use rustls::{Certificate, PrivateKey, ServerConfig};
 use rustls_pemfile::{certs, pkcs8_private_keys};
+use env_logger::Builder;
+use log::LevelFilter;
 
 mod create;
 mod func;
@@ -44,7 +46,10 @@ fn load_rustls_config() -> rustls::ServerConfig {
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
     std::env::set_var("RUST_LOG", "actix_web=debug");
-    env_logger::init();
+    
+    Builder::new()
+        .filter(None, LevelFilter::Info) // Modifiez ceci pour ajuster le niveau de filtrage des logs.
+        .init();
 
     let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let opts = Opts::from_url(&database_url).expect("Failed to parse database URL");
@@ -59,7 +64,7 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(move || {
         let cors = actix_cors::Cors::default()
-            .allowed_origin("http://localhost:8084")
+            .allowed_origin("https://192.168.0.39:8084")
             .allowed_methods(vec!["GET", "POST"])
             .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
             .allowed_header(http::header::CONTENT_TYPE)
@@ -67,6 +72,7 @@ async fn main() -> std::io::Result<()> {
             .max_age(3600);
 
         App::new()
+            
             .wrap(middleware::Logger::new("%s %{User-Agent}i %m %U%q %H  %b %{Referer}i %{X-Forwarded-For}i %D"))
             .wrap(cors)
             .app_data(Data::new(pool.clone()))
@@ -76,6 +82,10 @@ async fn main() -> std::io::Result<()> {
             .service(create::reset::reset_password)
             .service(create::forgot::forgot_password)
             .service(create::login::login)
+            .service(create::activatetwoauth::activate_2fa)
+            .service(create::deactivatetwoauth::deactivate_2fa)
+            .service(create::twoauth::verify_2fa)
+            .service(create::activatetwoauth::verify_2fa_activation)
     })
     .bind_rustls_021("0.0.0.0:8084", config)?
     .run()

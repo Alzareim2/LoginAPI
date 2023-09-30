@@ -22,14 +22,22 @@ pub async fn ensure_database_and_table_exists(pool: &Pool) -> Result<(), mysql_a
                     verification_attempts INT DEFAULT 0,
                     token_expiry TIMESTAMP NULL,
                     reset_password_token VARCHAR(255),
-                    reset_token_expiry TIMESTAMP NULL
+                    reset_token_expiry TIMESTAMP NULL,
+                    has_2fa BOOLEAN DEFAULT FALSE,
+                    2fa_code VARCHAR(6),
+                    2fa_expiry TIMESTAMP NULL,
+                    temp_2fa_code VARCHAR(6),
+                    temp_token VARCHAR(36), 
+                    temp_token_expiry TIMESTAMP NULL
                 )",
             )
             .await?;
+            
         
             conn.query_drop(r"CREATE INDEX idx_username ON users(username)").await?;
             conn.query_drop(r"CREATE INDEX idx_email ON users(email)").await?;
             conn.query_drop(r"CREATE INDEX idx_verification_token ON users(verification_token)").await?;
+            conn.query_drop(r"CREATE INDEX idx_2fa_code ON users(2fa_code)").await?;
         }
 
     Ok(())

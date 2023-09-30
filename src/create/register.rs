@@ -72,9 +72,11 @@ async fn create_account(
         .expect("Failed to calculate JWT expiration")
         .timestamp() as usize;
 
+    let has_2fa = false; 
     let claims = Claims {
         sub: info.username.clone(),
         exp: expiration,
+        has_2fa: has_2fa,
     };
 
     let secret = &jwt_secret;

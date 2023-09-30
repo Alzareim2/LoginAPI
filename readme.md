@@ -28,6 +28,7 @@ curl -X POST "http://localhost:8084/forgot_password"      -H "Content-Type: appl
     - Validates the user's credentials and returns a JWT token upon success.
     - The JWT token expires in one day.
     - If the user hasn't verified their email, an error message is sent.
+    - If the user has 2FA activated, the 2FA process will be initiated.
 
 ```bash
 curl -X POST "http://localhost:8084/login"      -H "Content-Type: application/json"      -d '{"username": "your_username", "password": "your_password"}'
@@ -71,6 +72,41 @@ curl -X POST "http://localhost:8084/resend_verification"      -H "Content-Type: 
 curl -X GET "http://localhost:8084/verify?token=your_verification_token"
 ```
 
+7. **Ativate Two-Factor Authentication (2FA)** (`/activate_2fa`)
+    - Users can activate 2FA for their accounts.
+    - An activation code is sent to the user's email.
+    - Uses SMTP details from environment variables.
+    - Returns a temporary token for the next verification step.
+
+```bash
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer YOUR_JWT_TOKEN_HERE" http://localhost:8000/activate_2fa
+```
+
+8. **Verify 2FA Activation** (`/verify_2fa_activation`)
+    - Validates the 2FA activation code and the temporary token.
+    - If valid, 2FA is activated for the user's account.
+
+```bash
+curl -X POST "http://localhost:8084/verify_2fa_activation"      -H "Content-Type: application/json"      -d '{"username": "your_username", "code": "your_2fa_code", "token": "your_temp_token"}'
+```
+
+9. **Deactivate Two-Factor Authentication (2FA)** (`/deactivate_2fa`) (I will change it)
+    - Users can deactivate 2FA for their accounts.
+    - Requires the user's username for deactivation.
+
+```bash
+curl -X POST "http://localhost:8084/deactivate_2fa"      -H "Content-Type: application/json"      -d '{"username": "your_username"}'
+```
+
+10. **Verify 2FA Code** (`/verify_2fa`) 
+    - Validates the user's 2FA code and temporary token
+    - Returns a JWT token upon successful validation of the 2FA code.
+    - The JWT token expires in one day. (you can modify this as you want)
+
+```bash
+curl -X POST "http://localhost:8084/verify_2fa"      -H "Content-Type: application/json"      -d '{"temp_token": "your_temp_token", "code": "your_2fa_code"}'
+```
+
 Replace placeholders like `your_email@example.com`, `your_username`, `your_password`, `desired_username`, `desired_password`, `your_token`, and `your_verification_token` with the appropriate values for your tests.
 
 ### Common Utilities (`common.rs`):
@@ -81,6 +117,7 @@ This module contains common imports, error handling, and data structures such as
 - Login, registration, forgot password, and reset password request structures.
 - JWT claims data structure.
 - Service errors (InternalServerError and BadRequest).
+- Many other...
 
 ## Running the API
 
@@ -93,31 +130,24 @@ Feel free to leave a star if you use the code <3
 Our aim is to develop the most user-friendly and widely adopted login/registration API. The roadmap below outlines the features and improvements we plan to implement:
 
 1. **Docker Integration (Completed)**: 
-   - Ensure that the API is easily deployable using Docker for a consistent and isolated environment. 
-   
-2. **Configurable Email Verification**:
-   - Allow the option to skip email verification for token confirmation during registration.
-   - Give the choice between sending a verification link or a verification code in the email.
+   - Ensure that the API is easily deployable using Docker for a consistent and isolated environment.   
 
-3. **Session Management for Login**:
-   - Implement a robust session management system to maintain user sessions securely after login.
+2. **Session Management for Login (Completed)** :
+   - Implement a robust session management system to maintain user sessions securely after login. (JWT Token 1d expiration)
    
-4. **Third-party Integrations for Login/Register**:
-   - Integrate options for users to register/login using third-party services like Google, Facebook, etc.
+3. **TwoAuth Integrations for Login/Register (Completed)**:
+   - Integrate options for users to register/login using in House 2FA.
 
-5. **Modularity**: 
+4. **Modularity**: 
    - Make the API highly modular, allowing developers to easily toggle features on or off based on their requirements.
 
-6. **Enhanced Security**:
-   - Explore multi-factor authentication options.
-
-7. **Documentation and Usage Guides**:
+5. **Documentation and Usage Guides**:
    - Provide comprehensive documentation and step-by-step guides to help developers integrate and deploy the API effortlessly. (There will be a public guide, but for those who want to go further and help me, a Udemy training course will probably be available in the future with examples of NextJs code with the api / Creation of an SMTP server / Creation of a deployable database also with Docker)
 
-8. **Continuous Integration and Testing**:
+6. **Continuous Integration and Testing**:
    - Ensure the reliability of the API through continuous integration and rigorous testing procedures.
 
-9. **Community Engagement**:
+7. **Community Engagement**:
    - Foster an active community around the project, encouraging contributions, feedback, and feature requests.
 
 Remember, our primary goal is ease of use while maintaining high security and flexibility. Your feedback and contributions will be invaluable in shaping the future of this project.

@@ -1,22 +1,34 @@
 // common.rs
 
-pub use actix_web::{post, get, web, HttpResponse, ResponseError};
-pub use actix_web::web::Data;
-pub use mysql_async::{Pool, prelude::Queryable};
-pub use serde_json::json;
-pub use thiserror::Error;
-pub use jsonwebtoken::{encode, EncodingKey, Header};
+// actix_web
+pub use actix_web::{post, get, web, HttpResponse, ResponseError, HttpMessage};
+pub use actix_web::web::{Data, Query};
+pub use actix_web::HttpRequest;
+
+// mysql_async
+pub use mysql_async::{Pool, Conn, Row, prelude::Queryable};
+
+// serde and serde_json
 pub use serde::{Deserialize, Serialize};
-pub use chrono::{Utc, Duration};
-pub use bcrypt::DEFAULT_COST;
+pub use serde_json::json;
+
+// chrono
+pub use chrono::{Utc, Duration, NaiveDateTime};
+
+// bcrypt
+pub use bcrypt::{DEFAULT_COST, hash};
+
+// jsonwebtoken
+pub use jsonwebtoken::{encode, EncodingKey, Header, Validation, decode, DecodingKey};
+
+// others
+pub use thiserror::Error;
 pub use rand::{Rng, distributions::Alphanumeric};
 pub use validator::Validate;
 pub use lettre::{Message, SmtpTransport, Transport, transport::smtp::authentication::Credentials};
-pub use bcrypt::hash;
-pub use chrono::NaiveDateTime;
-pub use actix_web::web::Query;
+pub use log::{info, error, debug};
 pub use std::env;
-
+pub use uuid::Uuid;
 
 
 impl ResponseError for ServiceError {
@@ -24,6 +36,7 @@ impl ResponseError for ServiceError {
         match *self {
             ServiceError::InternalServerError => HttpResponse::InternalServerError().json("Internal Server Error"),
             ServiceError::BadRequest(ref message) => HttpResponse::BadRequest().json(message),
+            ServiceError::Unauthorized(ref message) => HttpResponse::Unauthorized().json(message),
         }
     }
 }
@@ -32,6 +45,12 @@ impl ResponseError for ServiceError {
 pub struct LoginRequest {
     pub username: String,
     pub password: String,
+}
+
+#[derive(Deserialize)]
+pub struct Verify2FARequest {
+    pub temp_token: String,
+    pub code: String,
 }
 
 #[derive(Deserialize, Validate)]
@@ -50,12 +69,15 @@ pub enum ServiceError {
     InternalServerError,
     #[error("Bad Request: {0}")]
     BadRequest(String),
+    #[error("Unauthorized: {0}")]
+    Unauthorized(String),
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
     pub sub: String,
     pub exp: usize,
+    pub has_2fa: bool,
 }
 
 #[derive(Deserialize)]
@@ -79,3 +101,4 @@ pub struct ResetPasswordRequest {
     pub token: String,
     pub new_password: String,
 }
+
