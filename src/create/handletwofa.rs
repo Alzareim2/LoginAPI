@@ -9,10 +9,6 @@ pub async fn handle_2fa(
 ) -> Result<HttpResponse, ServiceError> {
     let code = twoauth::generate_2fa_code();
 
-    let smtp_email = env::var("SMTP_EMAIL").expect("SMTP_EMAIL is not set in .env");
-    let smtp_password = env::var("SMTP_PASSWORD").expect("SMTP_PASSWORD is not set in .env");
-    let smtp_server = env::var("SMTP_SERVER").expect("SMTP_SERVER is not set in .env");
-
     let email_addr: String = conn
         .exec_first("SELECT email FROM users WHERE username = ?", (username,))
         .await
@@ -22,25 +18,7 @@ pub async fn handle_2fa(
         })?
         .ok_or(ServiceError::BadRequest("User not found".to_string()))?;
 
-    let email = Message::builder()
-        .to(email_addr.parse().unwrap())
-        .from(smtp_email.parse().unwrap())
-        .subject("Your 2FA code")
-        .body(format!("Here is your 2FA code: {}", code))
-        .map_err(|_| ServiceError::InternalServerError)?;
-
-    let credentials = Credentials::new(
-        smtp_email,
-        smtp_password
-    );
-
-    let mailer = SmtpTransport::relay(&smtp_server)
-        .unwrap()
-        .credentials(credentials)
-        .build();
-
-    mailer.send(&email)
-        .map_err(|_| ServiceError::InternalServerError)?;
+    send_2fa_email(&email_addr, "Your 2FA code", &format!("Here is your 2FA code: {}", code)).await?;
 
     let expiry = Utc::now()
         .checked_add_signed(Duration::minutes(3))

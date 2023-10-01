@@ -102,3 +102,84 @@ pub struct ResetPasswordRequest {
     pub new_password: String,
 }
 
+#[derive(Deserialize)]
+pub struct TwoFAVerificationRequest {
+    pub username: String,
+    pub code: String,
+    pub token: String,
+}
+
+pub async fn send_2fa_email(
+    email_addr: &str,
+    subject: &str,
+    body: &str,
+) -> Result<(), ServiceError> {
+    let smtp_email = env::var("SMTP_EMAIL").expect("SMTP_EMAIL is not set in .env");
+    let smtp_password = env::var("SMTP_PASSWORD").expect("SMTP_PASSWORD is not set in .env");
+    let smtp_server = env::var("SMTP_SERVER").expect("SMTP_SERVER is not set in .env");
+
+    let email = Message::builder()
+        .to(email_addr.parse().unwrap())
+        .from(smtp_email.parse().unwrap())
+        .subject(subject)
+        .body(body.to_string()) 
+        .map_err(|_| ServiceError::InternalServerError)?;
+
+    let credentials = Credentials::new(
+        smtp_email,
+        smtp_password
+    );
+
+    let mailer = SmtpTransport::relay(&smtp_server)
+        .unwrap()
+        .credentials(credentials)
+        .build();
+
+    mailer.send(&email)
+        .map_err(|_| ServiceError::InternalServerError)?;
+    
+    Ok(()) 
+}
+
+pub async fn extract_user_email_from_token(
+    req: &HttpRequest,
+    pool: &Data<Pool>,
+) -> Result<(String, String), ServiceError> {
+    let jwt_secret = env::var("JWT_SECRET").expect("JWT_SECRET is not set in .env");
+    let auth_header = req.headers().get(http::header::AUTHORIZATION);
+
+    if auth_header.is_none() {
+        return Err(ServiceError::Unauthorized("No authorization header".to_string()));
+    }
+
+    let token_str_full = auth_header.unwrap().to_str().unwrap();
+    let token_parts: Vec<&str> = token_str_full.split_whitespace().collect();
+    if token_parts.len() != 2 || token_parts[0] != "Bearer" {
+        return Err(ServiceError::Unauthorized("Invalid authorization header format".to_string()));
+    }
+    let token_str = token_parts[1];
+
+    let token_data = decode::<Claims>(&token_str, &DecodingKey::from_secret(jwt_secret.as_ref()), &Validation::default())
+    .map_err(|e| {
+        error!("Error decoding JWT: {:?}", e);
+        ServiceError::Unauthorized("Invalid token".to_string())
+    })?;
+
+    let user_from_token = token_data.claims.sub;
+
+    let mut conn = pool.get_conn().await.map_err(|e| {
+        error!("Error getting DB connection: {:?}", e);
+        ServiceError::InternalServerError
+    })?;
+
+    let user_email: Option<String> = conn
+        .exec_first("SELECT email FROM users WHERE username = ?", (&user_from_token,))
+        .await
+        .map_err(|e| {
+            error!("Error executing DB query: {:?}", e);
+            ServiceError::InternalServerError
+        })?;
+
+    Ok((user_email.ok_or(ServiceError::BadRequest("User not found".to_string()))?, user_from_token))
+}
+

@@ -83,9 +83,10 @@ async fn main() -> std::io::Result<()> {
             .service(create::forgot::forgot_password)
             .service(create::login::login)
             .service(create::activatetwoauth::activate_2fa)
-            .service(create::deactivatetwoauth::deactivate_2fa)
+            .service(create::deactivatetwoauth::request_deactivate_2fa)
             .service(create::twoauth::verify_2fa)
-            .service(create::activatetwoauth::verify_2fa_activation)
+            .service(create::verifyactivatetwoauth::verify_2fa_activation)
+            .service(create::deactivatetwoauth::verify_2fa_deactivation)
     })
     .bind_rustls_021("0.0.0.0:8084", config)?
     .run()

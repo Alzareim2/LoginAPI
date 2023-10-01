@@ -24,14 +24,15 @@ async fn verify_2fa(
     let jwt_secret = env::var("JWT_SECRET").expect("JWT_SECRET is not set in .env");
 
     let row: Option<Row> = conn
-        .exec_first(
-            "SELECT 2fa_code, DATE_FORMAT(2fa_expiry, '%Y-%m-%d %H:%i:%s') AS 2fa_expiry, username FROM users WHERE temp_token = ?",
-            (&info.temp_token,),
-        )
-        .await.map_err(|e| {
-            error!("Error executing DB query: {:?}", e);
-            ServiceError::InternalServerError
-        })?;
+    .exec_first(
+        "SELECT 2fa_code, DATE_FORMAT(2fa_expiry, '%Y-%m-%d %H:%i:%s') AS 2fa_expiry, username, has_2fa FROM users WHERE temp_token = ?",
+        (&info.temp_token,),
+    )
+    .await.map_err(|e| {
+        error!("Error executing DB query: {:?}", e);
+        ServiceError::InternalServerError
+    })?;
+
 
     match row {
         Some(mut row_data) => {

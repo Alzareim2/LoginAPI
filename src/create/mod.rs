@@ -11,3 +11,5 @@ pub mod twoauth;
 pub mod handletwofa;
 pub mod deactivatetwoauth;
 pub mod activatetwoauth;
+pub mod verifyactivatetwoauth;
+pub mod registertwo;
